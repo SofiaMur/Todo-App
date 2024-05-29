@@ -80,6 +80,5 @@ document.addEventListener('click', e => {
             localStorage.setItem('items', JSON.stringify(items));
         }
     }
-
     renderItems();
 });
