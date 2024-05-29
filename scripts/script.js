@@ -15,17 +15,21 @@ class TodoData {
 
     addItem(item) {
         this.items.push(item);
+        localStorage.setItem('items', JSON.stringify(this.items));
         this.notifyObservers();
     }
 
     markComplete(index, item) {
         this.items.splice(index, 1);
         this.completed.push(item);
+        localStorage.setItem('items', JSON.stringify(this.items));
+        localStorage.setItem('completed', JSON.stringify(this.completed));
         this.notifyObservers();
     }
 
     deleteItem(index) {
         this.items.splice(index, 1);
+        localStorage.setItem('items', JSON.stringify(this.items));
         this.notifyObservers();
     }
 
