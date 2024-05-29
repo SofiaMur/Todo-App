@@ -27,6 +27,7 @@ p {
     color: var(--neutral-color);
     letter-spacing: 0.5px;
     margin: 0;
+    hyphens: auto;
 }
 
 .container {
