@@ -43,7 +43,7 @@ renderItems();
 
 form.addEventListener('submit', e => {
     e.preventDefault();
-    if (!input.value) return;
+    if (!input.value.trim()) return;
     items.push(input.value);
     localStorage.setItem('items', JSON.stringify(items));
     const li = document.createElement('li');
@@ -61,6 +61,7 @@ form.addEventListener('submit', e => {
 
 document.addEventListener('click', e => {
     let li = e.target.closest('li');
+    if (!li) return;
     let itemText = li.querySelector('p').textContent;
     let index = items.indexOf(itemText);
 

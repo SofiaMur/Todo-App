@@ -88,7 +88,7 @@ class TodoUI {
 
     addItem(e) {
         e.preventDefault();
-        if (!this.input.value) return;
+        if (!this.input.value.trim()) return;
         this.data.addItem(this.input.value);
         this.input.value = '';
     }
