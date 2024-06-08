@@ -7,8 +7,11 @@ class Storage {
     }
 }
 
-class ObserverManager {
-    constructor() {
+class TodoData {
+    constructor(storage) {
+        this.storage = storage;
+        this.items = this.storage.retrieve('items');
+        this.completed = this.storage.retrieve('completed');
         this.observers = [];
     }
 
@@ -17,16 +20,7 @@ class ObserverManager {
     }
 
     notifyObservers() {
-        this.observers.forEach(observer => observer.renderItems());
-    }
-}
-
-class TodoData extends ObserverManager {
-    constructor(storage) {
-        super();
-        this.storage = storage;
-        this.items = this.storage.retrieve('items');
-        this.completed = this.storage.retrieve('completed');
+        this.observers.forEach(observer => observer());
     }
 
     addItem(item) {
@@ -58,7 +52,22 @@ class TodoData extends ObserverManager {
     }
 }
 
-class ItemCreator {
+class TodoUI {
+    constructor(form, input, todo, done, countTodo, countDone, data) {
+        this.form = form;
+        this.input = input;
+        this.todo = todo;
+        this.done = done;
+        this.countTodo = countTodo;
+        this.countDone = countDone;
+        this.data = data;
+        this.data.addObserver(this.renderItems.bind(this));
+        this.form.addEventListener('submit', this.addItem.bind(this));
+        this.todo.addEventListener('click', this.actionItem.bind(this));
+        this.done.addEventListener('click', this.actionItem.bind(this));
+        this.renderItems();
+    }
+    
     createItem(item, container, index) {
         const li = document.createElement('li');
         li.dataset.index = index;
@@ -75,11 +84,25 @@ class ItemCreator {
         }
         container.appendChild(li);
     }
-}
 
-class EventManager {
-    constructor(data) {
-        this.data = data;
+    renderItems() {
+        this.todo.innerHTML = '';
+        this.done.innerHTML = '';
+        this.data.items.forEach((item, index) => this.createItem(item, this.todo, index));
+        this.data.completed.forEach(item => this.createItem(item, this.done));
+        this.updateCount();
+    }
+
+    updateCount() {
+        this.countTodo.textContent = this.data.getTodoCount();
+        this.countDone.textContent = this.data.getDoneCount();
+    }
+
+    addItem(e) {
+        e.preventDefault();
+        if (!this.input.value.trim()) return;
+        this.data.addItem(this.input.value);
+        this.input.value = '';
     }
 
     actionItem(e) {
@@ -95,50 +118,10 @@ class EventManager {
             this.data.deleteItem(index);
         }
     }
-
-    addItem(e, input) {
-        e.preventDefault();
-        if (!input.value.trim()) return;
-        this.data.addItem(input.value);
-        input.value = '';
-    }
-}
-
-class TodoUI extends ItemCreator {
-    constructor(form, input, todo, done, countTodo, countDone, data) {
-        super();
-        this.form = form;
-        this.input = input;
-        this.todo = todo;
-        this.done = done;
-        this.countTodo = countTodo;
-        this.countDone = countDone;
-        this.data = data;
-        this.data.addObserver(this);
-        this.eventManager = new EventManager(this.data);
-        this.form.addEventListener('submit', (e) => this.eventManager.addItem(e, this.input));
-        this.todo.addEventListener('click', this.eventManager.actionItem.bind(this.eventManager));
-        this.done.addEventListener('click', this.eventManager.actionItem.bind(this.eventManager));
-        this.renderItems();
-    }
-
-    renderItems() {
-        this.todo.innerHTML = '';
-        this.done.innerHTML = '';
-        this.data.items.forEach((item, index) => this.createItem(item, this.todo, index));
-        this.data.completed.forEach(item => this.createItem(item, this.done));
-        this.updateCount();
-    }
-
-    updateCount() {
-        this.countTodo.textContent = this.data.getTodoCount();
-        this.countDone.textContent = this.data.getDoneCount();
-    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     let storage = new Storage();
     let todoData = new TodoData(storage);
-    let todoUI = new TodoUI(document.querySelector('form'), document.querySelector('#item'), document.querySelector('#items'), document.querySelector('#completed'), document.querySelector('#countTodo'), document.querySelector('#countDone'), todoData);
-    todoData.addObserver(todoUI);
+    new TodoUI(document.querySelector('form'), document.querySelector('#item'), document.querySelector('#items'), document.querySelector('#completed'), document.querySelector('#countTodo'), document.querySelector('#countDone'), todoData);
 });
